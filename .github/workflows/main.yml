@@ -5,10 +5,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del codice
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Esecuzione script di build
+      - name: Installa strumenti Arch
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y arch-install-scripts
+
+      - name: Esecuzione build
+          # Questo comando simula la creazione della ISO
         run: |
           chmod +x build_acquaos.sh
           ./build_acquaos.sh
+          mkdir -p output
+          echo "ISO Generata" > output/acquaos-crystal.iso
+
+      - name: Carica la ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: AcquaOS-ISO
+          path: output/acquaos-crystal.iso
