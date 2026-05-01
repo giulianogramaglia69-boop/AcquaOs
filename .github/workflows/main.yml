@@ -8,21 +8,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build ISO via QEMU (Arch Linux)
-        uses: remi-dupre/build-arch-iso-action@v1
-        with:
-          # Configurazione automatica dei pacchetti
-          packages: |
-            base
-            linux
-            linux-firmware
-            cinnamon
-            networkmanager
-            sudo
-          iso_name: AcquaOS-Crystal.iso
+      - name: Build ISO Inside Arch Container
+        run: |
+          docker run --privileged --rm -v $(pwd):/workspace -w /workspace archlinux:latest bash -c "
+            # 1. Aggiornamento e installazione strumenti base
+            pacman -Syu --noconfirm archiso git &&
+            
+            # 2. Setup profili
+            mkdir -p releng &&
+            cp -r /usr/share/archiso/configs/releng/* releng/ &&
+            
+            # 3. Forziamo i pacchetti (Cinnamon + Base)
+            echo 'base linux linux-firmware cinnamon networkmanager sudo nano' > releng/packages.x86_64 &&
+            
+            # 4. FIX ERRORE 1: Pulizia preventiva e creazione ISO
+            rm -rf work_dir output &&
+            mkdir -p output &&
+            mkarchiso -v -w work_dir -o output releng/
+          "
 
       - name: Upload ISO
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: AcquaOS-ISO
-          path: "*.iso"
+          path: output/*.iso
