@@ -11,25 +11,26 @@ jobs:
       - name: Build ISO Inside Arch Container
         run: |
           docker run --privileged --rm -v $(pwd):/workspace -w /workspace archlinux:latest bash -c "
-            # 1. Aggiornamento e installazione strumenti base
-            pacman -Syu --noconfirm archiso git &&
+            # 1. Aggiornamento sistema e installazione archiso
+            pacman -Syu --noconfirm archiso &&
             
-            # 2. Setup profili
+            # 2. Setup profilo releng
             mkdir -p releng &&
             cp -r /usr/share/archiso/configs/releng/* releng/ &&
             
-            # 3. Forziamo i pacchetti (Cinnamon + Base)
-            echo 'base linux linux-firmware cinnamon networkmanager sudo nano' > releng/packages.x86_64 &&
+            # 3. Test Minimal: Solo base e linux per verificare se il server regge
+            echo 'base linux' > releng/packages.x86_64 &&
             
-            # 4. FIX ERRORE 1: Pulizia preventiva e creazione ISO
-            rm -rf work_dir output &&
+            # 4. Creazione cartella output
             mkdir -p output &&
-            mkarchiso -v -w work_dir -o output releng/
+            
+            # 5. Esecuzione Build (Usiamo /tmp per aggirare i limiti di spazio/permessi)
+            mkarchiso -v -w /tmp/work_dir -o output releng/
           "
 
       - name: Upload ISO
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: AcquaOS-ISO
+          name: AcquaOS-Minimal-ISO
           path: output/*.iso
