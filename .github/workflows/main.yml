@@ -1,0 +1,14 @@
+name: Build AcquaOS ISO
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      - name: Esecuzione script di build
+        run: |
+          chmod +x build_acquaos.sh
+          ./build_acquaos.sh
