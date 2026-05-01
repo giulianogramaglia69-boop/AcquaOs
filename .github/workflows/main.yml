@@ -8,11 +8,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build Arch Linux ISO
-        uses: anton-shovkoplyas/build-arch-iso@v1
+      - name: Build ISO via QEMU (Arch Linux)
+        uses: remi-dupre/build-arch-iso-action@v1
         with:
-          config_dir: 'releng'
-          # Qui scriviamo i pacchetti direttamente, senza file esterni
+          # Configurazione automatica dei pacchetti
           packages: |
             base
             linux
@@ -20,10 +19,10 @@ jobs:
             cinnamon
             networkmanager
             sudo
-          iso_name: 'AcquaOS-Crystal.iso'
+          iso_name: AcquaOS-Crystal.iso
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
           name: AcquaOS-ISO
-          path: output/*.iso
+          path: "*.iso"
