@@ -1,36 +1,37 @@
-name: Build AcquaOS ISO
+name: Build AcquaOS Final Attempt
 on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build ISO Inside Arch Container
+      - name: Install System Tools
         run: |
-          docker run --privileged --rm -v $(pwd):/workspace -w /workspace archlinux:latest bash -c "
-            # 1. Aggiornamento sistema e installazione archiso
-            pacman -Syu --noconfirm archiso &&
-            
-            # 2. Setup profilo releng
-            mkdir -p releng &&
-            cp -r /usr/share/archiso/configs/releng/* releng/ &&
-            
-            # 3. Test Minimal: Solo base e linux per verificare se il server regge
-            echo 'base linux' > releng/packages.x86_64 &&
-            
-            # 4. Creazione cartella output
-            mkdir -p output &&
-            
-            # 5. Esecuzione Build (Usiamo /tmp per aggirare i limiti di spazio/permessi)
-            mkarchiso -v -w /tmp/work_dir -o output releng/
-          "
+          sudo apt-get update
+          sudo apt-get install -y arch-install-scripts erofs-utils units libarchive-tools
 
-      - name: Upload ISO
-        if: success()
+      - name: Manual Archiso Build
+        run: |
+          # Scarichiamo mkarchiso come script standalone
+          git clone https://gitlab.archlinux.org/archlinux/archiso.git
+          
+          # Creiamo la struttura
+          mkdir -p releng
+          cp -r archiso/configs/releng/* releng/
+          
+          # Pacchetti minimi (solo per vedere se va!)
+          echo 'base linux' > releng/packages.x86_64
+          
+          # Esecuzione diretta bypassando Docker
+          mkdir -p output
+          sudo ./archiso/archiso/mkarchiso -v -w /tmp/work_dir -o output releng/
+
+      - name: Upload
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AcquaOS-Minimal-ISO
+          name: AcquaOS-ISO
           path: output/*.iso
