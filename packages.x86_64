@@ -1,0 +1,12 @@
+base
+linux-lts
+linux-firmware
+networkmanager
+grub
+sudo
+nano
+xorg-server
+cinnamon
+lightdm
+lightdm-gtk-greeter
+calamares
