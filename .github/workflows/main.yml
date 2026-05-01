@@ -4,26 +4,27 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: archlinux:latest
-      options: --privileged
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Tools & Build
+      - name: Build AcquaOS in Docker (Nativo)
         run: |
-          # Qui siamo dentro un ambiente Arch Linux vero!
-          pacman -Syu --noconfirm archiso git
-          mkdir -p releng
-          cp -r /usr/share/archiso/configs/releng/* releng/
-          
-          # Creiamo la lista pacchetti per AcquaOS
-          echo "base linux linux-firmware cinnamon networkmanager sudo" > releng/packages.x86_64
-          
-          # Lanciamo la build
-          mkdir -p output
-          mkarchiso -v -w work_dir -o output releng/
+          docker run --privileged --rm -v $(pwd):/workspace -w /workspace archlinux:latest bash -c "
+            # 1. Installazione strumenti
+            pacman -Syu --noconfirm archiso git &&
+            
+            # 2. Preparazione cartella releng
+            mkdir -p releng &&
+            cp -r /usr/share/archiso/configs/releng/* releng/ &&
+            
+            # 3. Configurazione pacchetti (Aggiungiamo NetworkManager per il Wi-Fi)
+            echo 'base linux linux-firmware cinnamon networkmanager sudo nano' > releng/packages.x86_64 &&
+            
+            # 4. Creazione ISO con bypass controlli
+            mkdir -p output &&
+            mkarchiso -v -w work_dir -o output releng/
+          "
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4
