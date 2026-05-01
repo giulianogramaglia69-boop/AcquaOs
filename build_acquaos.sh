@@ -1,32 +1,23 @@
 #!/bin/bash
 set -e
-echo "--- Build AcquaOS Crystal: Fix Sintassi ---"
+echo "--- Build AcquaOS: Minimal Mode ---"
 
-# 1. Installazione strumenti
+# 1. Installazione strumenti base disponibili su Ubuntu
 sudo apt-get update
-sudo apt-get install -y arch-install-scripts erofs-utils units libarchive-tools archiso
+sudo apt-get install -y arch-install-scripts erofs-utils units libarchive-tools
 
-# 2. Setup struttura
-rm -rf releng work_dir output
+# 2. Download manuale dei file di configurazione Arch
+git clone https://gitlab.archlinux.org/archlinux/archiso.git
 mkdir -p releng
-cp -r /usr/share/archiso/configs/releng/* releng/ || true
+cp -r archiso/configs/releng/* releng/
 
-# 3. Configurazione pacchetti (Fissiamo la lista qui per sicurezza)
-echo "base
-linux
-linux-firmware
-cinnamon
-networkmanager
-sudo" > releng/packages.x86_64
+# 3. Creazione lista pacchetti
+echo "base linux linux-firmware cinnamon networkmanager sudo" > releng/packages.x86_64
 
-# 4. Personalizzazioni
+# 4. Configurazione Dark Mode
 mkdir -p releng/airootfs/etc/skel/.config/gtk-3.0
-echo "[Settings]
-gtk-theme-name=Adwaita-dark
-gtk-application-prefer-dark-theme=1" > releng/airootfs/etc/skel/.config/gtk-3.0/settings.ini
+echo -e "[Settings]\ngtk-theme-name=Adwaita-dark\ngtk-application-prefer-dark-theme=1" > releng/airootfs/etc/skel/.config/gtk-3.0/settings.ini
 
-# 5. Generazione ISO
+# 5. Esecuzione Build
 mkdir -p output
 sudo mkarchiso -v -w work_dir -o output releng/
-
-echo "--- Build Completata! ---"
