@@ -1,24 +1,31 @@
 name: Build AcquaOS ISO
-on: [push]
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
     steps:
-      - name: Checkout del codice
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Espansione spazio disco
+      - name: Install Tools & Build
         run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
+          # Qui siamo dentro un ambiente Arch Linux vero!
+          pacman -Syu --noconfirm archiso git
+          mkdir -p releng
+          cp -r /usr/share/archiso/configs/releng/* releng/
+          
+          # Creiamo la lista pacchetti per AcquaOS
+          echo "base linux linux-firmware cinnamon networkmanager sudo" > releng/packages.x86_64
+          
+          # Lanciamo la build
+          mkdir -p output
+          mkarchiso -v -w work_dir -o output releng/
 
-      - name: Esecuzione build reale
-        run: |
-          chmod +x build_acquaos.sh
-          ./build_acquaos.sh
-
-      - name: Caricamento ISO Finale
+      - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
           name: AcquaOS-Crystal-ISO
