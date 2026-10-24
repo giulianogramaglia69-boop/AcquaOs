@@ -1,8 +1,11 @@
 # AcquaOS
 
 AcquaOS is an Arch Linux-based live environment built with `archiso`.
+It includes a Calamares installer and a desktop choice for:
+- Cinnamon
+- Hyprland
 
-## Prerequisites
+## Requirements
 
 Run this on a Debian/Ubuntu or Arch Linux host with root access and enough disk space.
 
@@ -13,18 +16,23 @@ chmod +x build_acquaos.sh
 ./build_acquaos.sh
 ```
 
-The build script will:
-
-- install the required Arch ISO build dependencies
+The script will:
+- install the required host dependencies
 - clone `archiso`
 - create a `releng` profile
-- set up package lists and boot configuration
-- generate a live ISO in the `output/` directory
+- configure package lists and desktop profiles
+- generate a live ISO in `output/`
+
+## Desktop behavior
+
+When the live system starts, AcquaOS can choose between:
+- Cinnamon
+- Hyprland
+
+Hyprland uses a dedicated custom config profile, while Cinnamon uses the default Cinnamon setup.
 
 ## Output
 
 ```bash
 ./output/
 ```
-
-This produces a real Arch-based live ISO, not a placeholder script.

@@ -2,13 +2,9 @@
 set -Eeuo pipefail
 
 # AcquaOS ISO builder
-# Arch-based live ISO with Calamares installer and desktop choice:
-#   - Cinnamon
-#   - Hyprland
-#
-# Runtime:
-#   - Debian/Ubuntu or Arch Linux host
-#   - root access required
+# Builds an Arch Linux-based live ISO using archiso.
+# Includes Calamares installer and desktop selection support.
+# Supports Cinnamon and Hyprland.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${REPO_ROOT}/work_dir"
@@ -57,63 +53,19 @@ if [[ ! -d "${PROFILE_DIR}" ]]; then
   cp -a "${ARCHISO_DIR}/configs/releng/." "${PROFILE_DIR}/"
 fi
 
-cat > "${PKGLIST_FILE}" <<'EOF'
-base
-linux
-linux-firmware
-networkmanager
-sudo
-nano
-bash-completion
-grub
-efibootmgr
-os-prober
-xorg-server
-xorg-xinit
-lightdm
-lightdm-gtk-greeter
-cinnamon
-hyprland
-xdg-desktop-portal
-xdg-desktop-portal-hyprland
-xdg-desktop-portal-gtk
-calamares
-calamares-settings
-gtk3
-glib2
-polkit
-pipewire
-pipewire-alsa
-pipewire-pulse
-wireplumber
-waybar
-rofi
-kitty
-fish
-noto-fonts
-noto-fonts-emoji
-qt5-base
-qt5-wayland
-qt6-base
-qt6-wayland
-firefox
-alsa-utils
-pulseaudio
-xdg-user-dirs
-EOF
+cp "${PKGLIST_FILE}" "${PROFILE_DIR}/packages.x86_64"
 
 mkdir -p "${PROFILE_DIR}/airootfs/root"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/gtk-3.0"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/modules"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos"
+mkdir -p "${PROFILE_DIR}/airootfs/usr/local/bin"
 
 cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/gtk-3.0/settings.ini" <<'EOF'
 [Settings]
 gtk-theme-name=Adwaita-dark
 gtk-application-prefer-dark-theme=1
 EOF
-
-mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/modules"
-mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/branding"
-mkdir -p "${PROFILE_DIR}/airootfs/usr/local/bin"
 
 cat > "${PROFILE_DIR}/airootfs/etc/calamares/modules/desktop-choice.conf" <<'EOF'
 desktop: cinnamon
@@ -220,7 +172,6 @@ systemctl enable calamares.service 2>/dev/null || true
 mkdir -p /etc/skel/Desktop
 echo 'Welcome to AcquaOS' > /etc/skel/Desktop/README.txt
 
-# Add a startup helper
 cat > /etc/profile.d/acquaos-desktop-chooser.sh <<'EOF2'
 #!/usr/bin/env bash
 if [[ -x /usr/local/bin/acquaos-desktop-selector.sh ]] && [[ ! -f /etc/acquaos/desktop-selected ]]; then
