@@ -1,0 +1,12 @@
+mode=drun
+allow_images=true
+width=520
+height=420
+location=top_right
+xoffset=20
+yoffset=40
+show=drun
+filter_rate=100
+insensitive=false
+prompt=Launch
+key_expand=Tab

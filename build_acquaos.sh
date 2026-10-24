@@ -81,6 +81,10 @@ xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 calamares
 calamares-settings
+fastfetch
+starship
+wofi
+sddm
 gtk3
 glib2
 polkit
@@ -108,6 +112,10 @@ mkdir -p "${PROFILE_DIR}/airootfs/root"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/gtk-3.0"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/hypr"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/waybar"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/fastfetch"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/wofi"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/starship"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/sddm.conf.d"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/modules"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos"
 mkdir -p "${PROFILE_DIR}/airootfs/usr/local/bin"
@@ -116,6 +124,158 @@ cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/gtk-3.0/settings.ini" <<'EOF'
 [Settings]
 gtk-theme-name=Adwaita-dark
 gtk-application-prefer-dark-theme=1
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/fastfetch/config.jsonc" <<'EOF'
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "source": "archlinux",
+    "type": "builtin",
+    "color": {
+      "1": "#6ee7ff",
+      "2": "#0ea5e9",
+      "3": "#d8f7ff"
+    }
+  },
+  "display": {
+    "separator": " -> ",
+    "size": {
+      "max": 80
+    }
+  },
+  "modules": [
+    "title",
+    "separator",
+    "os",
+    "host",
+    "kernel",
+    "uptime",
+    "packages",
+    "shell",
+    "desktop",
+    "wm",
+    "memory",
+    "break",
+    "colors"
+  ]
+}
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/starship.toml" <<'EOF'
+format = """
+[](#1d4f73)
+\[$envvar\](bg:#1d4f73 fg:#d8f7ff)
+[](bg:#0f3d59 fg:#1d4f73)
+\$username\[@\$hostname\](bg:#0f3d59 fg:#d8f7ff)
+[](bg:#0b2f42 fg:#0f3d59)
+\$directory\n[](fg:#0b2f42 bg:#081b29)
+\$git_branch\$git_status
+[](fg:#081b29 bg:#071b29)
+\$cmd_duration
+[](fg:#071b29)
+\n$character
+"""
+
+right_format = ""
+
+add_newline = true
+
+[character]
+success_symbol = "[❯](bold #7ee7ff)"
+error_symbol = "[✖](bold red)"
+
+[username]
+show_always = true
+style_user = "bg:#1d4f73 fg:#d8f7ff"
+style_root = "bg:#1d4f73 fg:#fff"
+format = "[\u3000$user](bg:#1d4f73 fg:#d8f7ff)"
+
+[hostname]
+ssh_only = false
+disabled = false
+style = "bg:#0f3d59 fg:#d8f7ff"
+format = "[@$hostname](bg:#0f3d59 fg:#d8f7ff)"
+
+[directory]
+style = "bg:#0f3d59 fg:#d8f7ff"
+format = "[ $path ](bg:#0f3d59 fg:#d8f7ff)"
+truncation_length = 4
+truncation_symbol = "…/"
+
+[git_branch]
+style = "bg:#081b29 fg:#7ee7ff"
+format = "[ $symbol$branch ](bg:#081b29 fg:#7ee7ff)"
+
+[git_status]
+style = "bg:#081b29 fg:#d8f7ff"
+format = "[($all_status$ahead_behind)](bg:#081b29 fg:#d8f7ff)"
+
+[cmd_duration]
+style = "bg:#071b29 fg:#a7f3d0"
+format = "[ ⏱ $duration ](bg:#071b29 fg:#a7f3d0)"
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/wofi/config" <<'EOF'
+mode=drun
+allow_images=true
+width=520
+height=420
+location=top_right
+xoffset=20
+yoffset=40
+show=drun
+filter_rate=100
+insensitive=false
+prompt=Launch
+key_expand=Tab
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/wofi/style.css" <<'EOF'
+window {
+  background: rgba(4, 22, 35, 0.8);
+  border: 1px solid rgba(114, 224, 255, 0.7);
+  border-radius: 18px;
+  color: #d8f7ff;
+}
+
+#input {
+  background: rgba(9, 47, 66, 0.9);
+  color: #d8f7ff;
+  border: 1px solid rgba(125, 235, 255, 0.8);
+  border-radius: 12px;
+  margin: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+#entry {
+  background: transparent;
+  color: #d8f7ff;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+#entry:selected {
+  background: rgba(25, 118, 163, 0.9);
+  color: white;
+}
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/sddm.conf.d/aquaos.conf" <<'EOF'
+[General]
+Numlock=on
+
+[Theme]
+Current=breeze
+CursorTheme=Bibata-Modern-Classic
+Font=Noto Sans,10,-1,5,50,0,0,0,0,0
+
+[Autologin]
+Relogin=false
+
+[Users]
+HideUsers=
 EOF
 
 cat > "${PROFILE_DIR}/airootfs/etc/calamares/modules/desktop-choice.conf" <<'EOF'
@@ -458,6 +618,7 @@ cp /etc/acquaos/desktop-cinnamon.conf /etc/acquaos/desktop.conf 2>/dev/null || t
 systemctl enable NetworkManager
 systemctl enable lightdm
 systemctl enable systemd-timesyncd
+systemctl enable sddm 2>/dev/null || true
 systemctl enable calamares.service 2>/dev/null || true
 
 mkdir -p /etc/skel/Desktop

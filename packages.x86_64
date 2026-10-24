@@ -19,6 +19,10 @@ xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 calamares
 calamares-settings
+fastfetch
+starship
+wofi
+sddm
 gtk3
 glib2
 polkit
