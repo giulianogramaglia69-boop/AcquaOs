@@ -5,6 +5,8 @@ It includes a Calamares installer and a desktop choice for:
 - Cinnamon
 - Hyprland
 
+The Hyprland theme is styled as an AquaOS water-inspired visual identity.
+
 ## Requirements
 
 Run this on a Debian/Ubuntu or Arch Linux host with root access and enough disk space.
@@ -29,7 +31,7 @@ When the live system starts, AcquaOS can choose between:
 - Cinnamon
 - Hyprland
 
-Hyprland uses a dedicated custom config profile, while Cinnamon uses the default Cinnamon setup.
+Hyprland uses a dedicated AquaOS theme with blue and cyan tones, translucent glass panels, and a clean modern layout.
 
 ## Output
 

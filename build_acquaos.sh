@@ -2,9 +2,15 @@
 set -Eeuo pipefail
 
 # AcquaOS ISO builder
-# Builds an Arch Linux-based live ISO using archiso.
-# Includes Calamares installer and desktop selection support.
-# Supports Cinnamon and Hyprland.
+# Arch-based live ISO with Calamares installer and desktop selection:
+#   - Cinnamon
+#   - Hyprland
+#
+# AquaOS theme is water-inspired: blue, cyan, glass, soft modern UI.
+#
+# Requires:
+#   - Debian/Ubuntu or Arch Linux host
+#   - root access
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${REPO_ROOT}/work_dir"
@@ -53,10 +59,55 @@ if [[ ! -d "${PROFILE_DIR}" ]]; then
   cp -a "${ARCHISO_DIR}/configs/releng/." "${PROFILE_DIR}/"
 fi
 
-cp "${PKGLIST_FILE}" "${PROFILE_DIR}/packages.x86_64"
+cat > "${PKGLIST_FILE}" <<'EOF'
+base
+linux
+linux-firmware
+networkmanager
+sudo
+nano
+bash-completion
+grub
+efibootmgr
+os-prober
+xorg-server
+xorg-xinit
+lightdm
+lightdm-gtk-greeter
+cinnamon
+hyprland
+xdg-desktop-portal
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+calamares
+calamares-settings
+gtk3
+glib2
+polkit
+pipewire
+pipewire-alsa
+pipewire-pulse
+wireplumber
+waybar
+rofi
+kitty
+fish
+noto-fonts
+noto-fonts-emoji
+qt5-base
+qt5-wayland
+qt6-base
+qt6-wayland
+firefox
+alsa-utils
+pulseaudio
+xdg-user-dirs
+EOF
 
 mkdir -p "${PROFILE_DIR}/airootfs/root"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/gtk-3.0"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/hypr"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/waybar"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/modules"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos"
 mkdir -p "${PROFILE_DIR}/airootfs/usr/local/bin"
@@ -103,7 +154,7 @@ packages=(
   "wireplumber"
 )
 session=hyprland
-theme=tokyo-night
+theme=aqua
 EOF
 
 cat > "${PROFILE_DIR}/airootfs/usr/local/bin/acquaos-desktop-selector.sh" <<'EOF'
@@ -141,6 +192,246 @@ case "${CHOICE}" in
 esac
 EOF
 chmod +x "${PROFILE_DIR}/airootfs/usr/local/bin/acquaos-desktop-selector.sh"
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/hypr/hyprland.conf" <<'EOF'
+# AquaOS Hyprland configuration
+# Water-inspired palette: deep blue, teal, cyan, glass panels
+
+$bg_deep = rgb(4, 22, 35)
+$bg_mid = rgb(9, 47, 66)
+$bg_panel = rgba(9, 52, 74, 0.72)
+$bg_panel_alt = rgba(14, 85, 109, 0.75)
+
+$teal = rgb(72, 214, 255)
+$cyan = rgb(125, 235, 255)
+$ice = rgb(216, 247, 255)
+$blue = rgb(18, 117, 163)
+$muted = rgb(158, 210, 225)
+$shadow = rgba(0, 0, 0, 0.45)
+
+general {
+    gaps_in = 6
+    gaps_out = 12
+    border_size = 2
+    col.active_border = rgba(114, 224, 255, 1)
+    col.inactive_border = rgba(18, 117, 163, 0.7)
+    layout = dwindle
+}
+
+decoration {
+    rounding = 14
+    blur = yes
+    blur_size = 7
+    blur_passes = 2
+    blur_new_optimizations = on
+
+    drop_shadow = yes
+    shadow_range = 20
+    shadow_render_power = 3
+    shadow_color = $shadow
+
+    active_opacity = 1.0
+    inactive_opacity = 0.95
+    fullscreen_opacity = 1.0
+}
+
+animations {
+    enabled = yes
+
+    bezier = aqua_curve, 0.05, 0.9, 0.1, 1.0
+
+    animation = windows, 1, 7, aqua_curve
+    animation = windowsOut, 1, 7, default, popin 80%
+    animation = border, 1, 10, default
+    animation = fade, 1, 8, default
+    animation = workspaces, 1, 7, aqua_curve
+}
+
+dwindle {
+    pseudotile = yes
+    preserve_split = yes
+}
+
+master {
+    new_is_master = true
+}
+
+misc {
+    disable_hyprland_logo = true
+    disable_splash_rendering = true
+    vfr = true
+}
+
+input {
+    kb_layout = us
+    follow_mouse = 1
+    touchpad {
+        natural_scroll = true
+    }
+    sensitivity = 0.0
+}
+
+gestures {
+    workspace_swipe = true
+    workspace_swipe_fingers = 3
+}
+
+monitor = ,preferred,auto,1
+
+$mainMod = SUPER
+
+bind = $mainMod, RETURN, exec, kitty
+bind = $mainMod, B, exec, firefox
+bind = $mainMod, R, exec, rofi -show drun
+bind = $mainMod, Q, killactive,
+bind = $mainMod, M, exit,
+bind = $mainMod, F, fullscreen,
+bind = $mainMod, V, togglefloating,
+bind = $mainMod, P, pseudo,
+bind = $mainMod, J, togglesplit,
+bind = $mainMod, SPACE, exec, rofi -show drun
+
+bind = $mainMod, left, movefocus, l
+bind = $mainMod, right, movefocus, r
+bind = $mainMod, up, movefocus, u
+bind = $mainMod, down, movefocus, d
+
+bind = $mainMod SHIFT, left, movewindow, l
+bind = $mainMod SHIFT, right, movewindow, r
+bind = $mainMod SHIFT, up, movewindow, u
+bind = $mainMod SHIFT, down, movewindow, d
+
+bind = $mainMod, 1, workspace, 1
+bind = $mainMod, 2, workspace, 2
+bind = $mainMod, 3, workspace, 3
+bind = $mainMod, 4, workspace, 4
+bind = $mainMod, 5, workspace, 5
+bind = $mainMod, 6, workspace, 6
+
+bind = $mainMod SHIFT, 1, movetoworkspace, 1
+bind = $mainMod SHIFT, 2, movetoworkspace, 2
+bind = $mainMod SHIFT, 3, movetoworkspace, 3
+bind = $mainMod SHIFT, 4, movetoworkspace, 4
+bind = $mainMod SHIFT, 5, movetoworkspace, 5
+bind = $mainMod SHIFT, 6, movetoworkspace, 6
+
+bind = , XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+bind = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bind = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bind = , XF86MonBrightnessUp, exec, brightnessctl set +5%
+bind = , XF86MonBrightnessDown, exec, brightnessctl set 5%-
+
+windowrulev2 = float, class:^(nm-connection-editor)$
+windowrulev2 = float, class:^(pavucontrol)$
+windowrulev2 = float, class:^(blueman-manager)$
+windowrulev2 = opacity 0.96 0.92, class:^(firefox)$
+windowrulev2 = opacity 0.96 0.92, class:^(kitty)$
+
+exec-once = dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+exec-once = /usr/lib/polkit-kde-authentication-agent-1
+exec-once = waybar
+exec-once = nm-applet
+exec-once = swaybg -i /usr/share/backgrounds/aquaos-water.jpg -m fill
+
+env = XCURSOR_THEME, Bibata-Modern-Classic
+env = XCURSOR_SIZE, 24
+env = GTK_THEME, Adwaita-dark
+
+exec-once = hyprctl setcursor Bibata-Modern-Classic 24
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/waybar/config.jsonc" <<'EOF'
+{
+  "layer": "top",
+  "position": "top",
+  "height": 30,
+  "spacing": 6,
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": [],
+  "modules-right": ["pulseaudio", "network", "cpu", "memory", "clock"],
+
+  "hyprland/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true,
+    "format": "{icon}",
+    "format-icons": {
+      "default": "◉",
+      "active": "◉",
+      "urgent": "⚡"
+    }
+  },
+
+  "hyprland/window": {
+    "format": "{title}",
+    "max-length": 40
+  },
+
+  "pulseaudio": {
+    "format": "🔊 {volume}%",
+    "format-muted": "🔇 muted"
+  },
+
+  "network": {
+    "format": "🌐 {essid}",
+    "format-disconnected": "🌐 offline"
+  },
+
+  "cpu": {
+    "format": "CPU {usage}%"
+  },
+
+  "memory": {
+    "format": "RAM {used}G"
+  },
+
+  "clock": {
+    "format": "🕒 {:%H:%M %d/%m}"
+  }
+}
+EOF
+
+cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/waybar/style.css" <<'EOF'
+* {
+  font-family: "JetBrains Mono", "Noto Sans", sans-serif;
+  border: none;
+  border-radius: 12px;
+}
+
+window#waybar {
+  background: rgba(7, 27, 39, 0.7);
+  color: #d8f7ff;
+  border-bottom: 1px solid rgba(125, 235, 255, 0.35);
+}
+
+#workspaces {
+  background: rgba(10, 68, 92, 0.6);
+  border-radius: 12px;
+  margin: 5px 8px;
+  padding: 0 10px;
+}
+
+#workspaces button {
+  color: #d8f7ff;
+  background: transparent;
+  padding: 0 10px;
+  margin: 0 2px;
+}
+
+#workspaces button.active {
+  color: #7debff;
+  background: rgba(18, 117, 163, 0.8);
+  border-radius: 10px;
+}
+
+#window, #pulseaudio, #network, #cpu, #memory, #clock {
+  padding: 0 12px;
+  background: rgba(14, 85, 109, 0.45);
+  border-radius: 10px;
+  margin: 5px 4px;
+}
+EOF
+
+mkdir -p "${PROFILE_DIR}/airootfs/usr/share/backgrounds"
 
 cat > "${PROFILE_DIR}/airootfs/root/customize_airootfs.sh" <<'EOF'
 #!/usr/bin/env bash
