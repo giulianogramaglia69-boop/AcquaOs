@@ -118,7 +118,21 @@ mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/sddm.conf.d"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/modules"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos/configs/hypr"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos/configs/waybar"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos/configs/fastfetch"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos/configs/wofi"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos/configs/sddm"
 mkdir -p "${PROFILE_DIR}/airootfs/usr/local/bin"
+
+cp -a "${REPO_ROOT}/configs/hypr/hyprland.conf" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/hypr/hyprland.conf"
+cp -a "${REPO_ROOT}/configs/waybar/config.jsonc" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/waybar/config.jsonc"
+cp -a "${REPO_ROOT}/configs/waybar/style.css" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/waybar/style.css"
+cp -a "${REPO_ROOT}/configs/fastfetch/config.jsonc" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/fastfetch/config.jsonc"
+cp -a "${REPO_ROOT}/configs/wofi/config" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/wofi/config"
+cp -a "${REPO_ROOT}/configs/wofi/style.css" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/wofi/style.css"
+cp -a "${REPO_ROOT}/configs/starship.toml" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/starship.toml"
+cp -a "${REPO_ROOT}/configs/sddm/aquaos.conf" "${PROFILE_DIR}/airootfs/etc/acquaos/configs/sddm/aquaos.conf"
 
 cat > "${PROFILE_DIR}/airootfs/etc/skel/.config/gtk-3.0/settings.ini" <<'EOF'
 [Settings]

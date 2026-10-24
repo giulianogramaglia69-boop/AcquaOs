@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# AcquaOS post-install configuration
-# Run this after installation on the target system.
-
 echo "==> AcquaOS post-install setup"
 
 pacman -S --needed --noconfirm \
