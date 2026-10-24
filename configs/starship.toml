@@ -1,0 +1,49 @@
+format = """
+[](#1d4f73)
+\[$envvar\](bg:#1d4f73 fg:#d8f7ff)
+[](bg:#0f3d59 fg:#1d4f73)
+\$username\[@\$hostname\](bg:#0f3d59 fg:#d8f7ff)
+[](bg:#0b2f42 fg:#0f3d59)
+\$directory\n[](fg:#0b2f42 bg:#081b29)
+\$git_branch\$git_status
+[](fg:#081b29 bg:#071b29)
+\$cmd_duration
+[](fg:#071b29)
+\n$character
+"""
+
+add_newline = true
+
+[character]
+success_symbol = "[❯](bold #7ee7ff)"
+error_symbol = "[✖](bold red)"
+
+[username]
+show_always = true
+style_user = "bg:#1d4f73 fg:#d8f7ff"
+style_root = "bg:#1d4f73 fg:#fff"
+format = "[\u3000$user](bg:#1d4f73 fg:#d8f7ff)"
+
+[hostname]
+ssh_only = false
+disabled = false
+style = "bg:#0f3d59 fg:#d8f7ff"
+format = "[@$hostname](bg:#0f3d59 fg:#d8f7ff)"
+
+[directory]
+style = "bg:#0f3d59 fg:#d8f7ff"
+format = "[ $path ](bg:#0f3d59 fg:#d8f7ff)"
+truncation_length = 4
+truncation_symbol = "…/"
+
+[git_branch]
+style = "bg:#081b29 fg:#7ee7ff"
+format = "[ $symbol$branch ](bg:#081b29 fg:#7ee7ff)"
+
+[git_status]
+style = "bg:#081b29 fg:#d8f7ff"
+format = "[($all_status$ahead_behind)](bg:#081b29 fg:#d8f7ff)"
+
+[cmd_duration]
+style = "bg:#071b29 fg:#a7f3d0"
+format = "[ ⏱ $duration ](bg:#071b29 fg:#a7f3d0)"

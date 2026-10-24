@@ -114,7 +114,7 @@ mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/hypr"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/waybar"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/fastfetch"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/wofi"
-mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config/starship"
+mkdir -p "${PROFILE_DIR}/airootfs/etc/skel/.config"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/sddm.conf.d"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/calamares/modules"
 mkdir -p "${PROFILE_DIR}/airootfs/etc/acquaos"
@@ -176,8 +176,6 @@ format = """
 [](fg:#071b29)
 \n$character
 """
-
-right_format = ""
 
 add_newline = true
 
