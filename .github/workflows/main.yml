@@ -8,52 +8,25 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Patch build script for current archiso
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("build_acquaos.sh")
-          text = p.read_text()
-          # 1. mkarchiso reads the package list from inside the profile
-          marker = 'echo "==> Running mkarchiso"'
-          insert = 'cp -a "${PKGLIST_FILE}" "${PROFILE_DIR}/packages.x86_64"\n\n'
-          if "PROFILE_DIR}/packages.x86_64" not in text:
-              assert marker in text, "mkarchiso marker not found"
-              text = text.replace(marker, insert + marker, 1)
-          # 2. Current archiso calls realpath on pacman_conf in _read_profile,
-          # before any default is set, so profiledef.sh must set it.
-          # The stock releng profiledef sets pacman_conf="pacman.conf".
-          old = 'author="AcquaOS"'
-          if 'pacman_conf="pacman.conf"' not in text:
-              assert text.count(old) == 1
-              text = text.replace(old, old + '\npacman_conf="pacman.conf"\nairootfs_image_type="squashfs"', 1)
-          # 3. BIOS syslinux boot mode requires the syslinux package
-          if "\nsyslinux\n" not in text:
-              assert "\ngrub\n" in text
-              text = text.replace("\ngrub\n", "\ngrub\nsyslinux\n", 1)
-          p.write_text(text)
-          print("patched")
-          PY
-      - name: Build AcquaOS ISO in privileged Arch container
+      - name: Build AcquaOS ISO in privileged Fedora 45 container
         run: |
           docker run --rm --privileged \
             -v "${{ github.workspace }}:/build" \
             -w /build \
-            archlinux:latest \
+            fedora:45 \
             bash -euo pipefail -c '
-              pacman -Sy --noconfirm archlinux-keyring
-              pacman -S --noconfirm --needed archiso erofs-utils git base-devel
-              chmod +x build_acquaos.sh
-              ./build_acquaos.sh
+              dnf install -y lorax lorax-lmc-novirt anaconda-tui pykickstart squashfs-tools xorriso git
+              chmod +x fedora/build_fedora_iso.sh
+              ./fedora/build_fedora_iso.sh
               ls -lh output/
             '
       - name: Fix output ownership
         if: always()
-        run: sudo chown -R $(id -u):$(id -g) output work_dir releng archiso 2>/dev/null || true
+        run: sudo chown -R $(id -u):$(id -g) output 2>/dev/null || true
       - name: Upload ISO
         if: always()
         uses: actions/upload-artifact@v4
