@@ -15,7 +15,11 @@ if command -v ksvalidator >/dev/null 2>&1; then
   ksvalidator "${RENDERED}"
 fi
 
-mkdir -p "${REPO_ROOT}/output"
+# livemedia-creator si rifiuta di partire se la directory di output esiste gia:
+# "The results_dir (...) should not exist, please delete or move its contents"
+# (run #34, 2026-11-10: lo script creava output/ con mkdir -p prima di lmc).
+# Quindi: rimuovi output/ se esiste e lascia che sia livemedia-creator a crearla.
+rm -rf "${REPO_ROOT}/output"
 
 echo "==> Building live ISO with livemedia-creator --no-virt"
 livemedia-creator --make-iso --no-virt \
@@ -25,7 +29,8 @@ livemedia-creator --make-iso --no-virt \
   --volid="AcquaOS-45" \
   --iso-name="AcquaOS-45-x86_64.iso" \
   --resultdir="${REPO_ROOT}/output" \
-  --logfile="${REPO_ROOT}/output/livemedia.log"
+  --logfile="/tmp/livemedia.log"
 
 echo "==> Done"
+cp /tmp/livemedia.log "${REPO_ROOT}/output/" 2>/dev/null || true
 ls -lh "${REPO_ROOT}/output/"
