@@ -1,37 +1,52 @@
-name: Build AcquaOS Final Attempt
-on: [push, workflow_dispatch]
-
+name: Build AcquaOS
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install System Tools
+      - name: Patch build script to use AcquaOS package list in profile
         run: |
-          sudo apt-get update
-          sudo apt-get install -y arch-install-scripts erofs-utils units libarchive-tools
-
-      - name: Manual Archiso Build
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("build_acquaos.sh")
+          text = p.read_text()
+          marker = 'echo "==> Running mkarchiso"'
+          insert = 'cp -a "${PKGLIST_FILE}" "${PROFILE_DIR}/packages.x86_64"\n\n'
+          if "PROFILE_DIR}/packages.x86_64" not in text:
+              assert marker in text, "mkarchiso marker not found"
+              text = text.replace(marker, insert + marker, 1)
+              p.write_text(text)
+          print("patched" if "PROFILE_DIR}/packages.x86_64" in p.read_text() else "not patched")
+          PY
+      - name: Build AcquaOS ISO in privileged Arch container
         run: |
-          # Scarichiamo mkarchiso come script standalone
-          git clone https://gitlab.archlinux.org/archlinux/archiso.git
-          
-          # Creiamo la struttura
-          mkdir -p releng
-          cp -r archiso/configs/releng/* releng/
-          
-          # Pacchetti minimi (solo per vedere se va!)
-          echo 'base linux' > releng/packages.x86_64
-          
-          # Esecuzione diretta bypassando Docker
-          mkdir -p output
-          sudo ./archiso/archiso/mkarchiso -v -w /tmp/work_dir -o output releng/
-
-      - name: Upload
+          docker run --rm --privileged \
+            -v "${{ github.workspace }}:/build" \
+            -w /build \
+            archlinux:latest \
+            bash -euo pipefail -c '
+              pacman -Sy --noconfirm archlinux-keyring
+              pacman -S --noconfirm --needed archiso erofs-utils git base-devel
+              chmod +x build_acquaos.sh
+              ./build_acquaos.sh
+              ls -lh output/
+            '
+      - name: Fix output ownership
+        if: always()
+        run: sudo chown -R $(id -u):$(id -g) output work_dir releng archiso 2>/dev/null || true
+      - name: Upload ISO
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: AcquaOS-ISO
           path: output/*.iso
+          if-no-files-found: error
+          retention-days: 7
